@@ -1,4 +1,4 @@
-baseURL = "http://example.org/"
+baseURL = "http://aws-exam-notes.s3-website-ap-southeast-2.amazonaws.com"
 languageCode = "en-us"
 title = "AWS exam notes"
 theme = "ananke"

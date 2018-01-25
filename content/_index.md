@@ -3,4 +3,7 @@ title: "Notes"
 featured_image: '/images/gohugo-default-sample-hero-image.jpg'
 description: "Helping with your AWS exams"
 ---
-Welcome to my sponge. I hope you find this site absorbing.
+
+Just a simple place to share study notes for AWS exams.
+
+You can find the project on github: https://github.com/skinnybeans/aws_exam_notes

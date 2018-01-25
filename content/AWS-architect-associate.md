@@ -72,14 +72,11 @@ menu:
   - Recommended that all instances are of same type
   - All instance must be in same AZ
 
-<br>
 
 - Spread placement groups
   - Use for placing instances on separate hardware
   - Can be spread across AZs
-  - Max 7 instances per AZ per placement group
-
-<br>
+  - Max 7 instances per AZ per placement group  
 
 - No extra charge for using placement groups
 
@@ -154,6 +151,7 @@ _Snaphotting RAID arrays_
   - Can only launch an image from the regions it's stored in
   - Can copy between regions using command line, console or API
 
+- Cannot delete the EBS snapshot that an AMI is based on.
 
 ### Instance backed storage
 
@@ -211,6 +209,9 @@ _Snaphotting RAID arrays_
 
 - Performs heath checks on the instances
 - Will only send traffic to healthy instances
+
+- Never have a public IPv4 address.
+- Must use a DNS name.
 
 Types of load balancers
 
@@ -306,3 +307,62 @@ Services that can trigger Lambda:
 ## API gateway
 
 ### CORS
+
+## DNS
+
+### DNS basics
+#### Top level domains
+- Managed by Internet Assigned Numbers Authority (IANA)
+- Top level domains are .com .net etc
+
+#### Domain registrars
+- Manage purchasing of domains
+- Registers domains with InterNIC which enforces uniqueness of domains across the internet.
+- Domain information becomes available in a central database called WhoIS database.
+
+#### SOA records
+- Contains metadata about the domain
+
+#### Name server records (NS Records)
+- Used by top level domain servers to locate which Content DNS servers contain the authoritative DNS records.
+  - in other words, where to go to find out the actual domain name -> IP address mapping (A record).
+
+#### Address record (A Record)
+- Translates the domain name to an ip address
+  - eg http://aws-exam-notes.com to 192.168.0.0
+
+#### Canonical name (CNAME)
+- Used to resolve one domain name to another
+  - eg mobile.somesite.com -> m.somesite.com
+- Can't be used for naked domains (apex record) eg somesite.com
+
+_cost_
+
+- Charged for CNAME look ups.
+
+#### Alias records
+- AWS specific type of record.
+- Very similar to CNAME
+  - However alias record can map from a naked domain
+- Maps resource record sets in Route 53 hosted zone to AWS resources:
+  - S3 buckets, load balancers, cloud front distributions.
+  - Mainly used for load balancers
+
+_cost_
+
+- No charge for alias record look up
+  - For this reason, alway prefer over CNAME when possible
+
+#### TTL
+- Time to live for a record.
+- Resolving servers or local pc will cache record for this long.
+- Lower TTL means faster propagation of name changes.
+- Default set to around two days
+
+_Planning DNS migrations_
+
+- Lower TTL to 300 sec (5 min) at least 2 days before.
+  - Allows for TTL change to propagate.
+- Change name records.
+  - Changes will now propagate quickly.
+  - Minimise possible downtime with change.

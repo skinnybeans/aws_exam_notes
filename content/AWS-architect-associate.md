@@ -44,16 +44,22 @@ menu:
 
 | Family | Speciality        | Use case       |
 | ------ | ----------------- | -------------- |
+| F1    | Field programmable gate array | Genomics research, financial analysis, big data  |
+| I3    | High speed storage | NoSQL DBs, Data warehousing |
+| H1    | High disk throughput | MapReduce workloads, distributed file systems |
 | D2    | Dense storage     | File servers, data warehousing, Hadoop |
-| R4    | Memory optimised  | Memory intensive apps/DB |
-| M4    | General purpose   | Application servers |
-| C4    | Compute optimised | CPU intensive apps/DB |
-| G2    | Graphics intensive | Video encoding/3D application streaming |
+| R5    | Memory optimised  | Memory intensive apps/DB |
+| M5    | General purpose   | Application servers |
+| C5    | Compute optimised | CPU intensive apps/DB |
+| G3    | Graphics intensive | Video encoding/3D application streaming |
 | I2    | High speed storage | NoSQL DBs, Data warehousing |
 | F1    | Field programmable gate array | Hardware acceleration for code |
-| T2    | Low cost general purpose | Web servers, small DBs |
-| P2    | Graphics/general purpose GPU | Machine learning, Bitcoin mining |
+| T3    | Low cost general purpose | Web servers, small DBs |
+| P3    | Graphics/general purpose GPU | Machine learning, Bitcoin mining |
 | X1    | Memory optimised  | Apache spark, SAP HANA |
+| Z1D   | High compute and memory | Electronic design automation and DBs with per core licensing |
+| A1    | ARM based workloads | Scale out workloads such as webservers |
+| U-6tb1 | Bare metal       | Eliminate virtualisation overhead |
 
 ### Termination protection
 
@@ -274,17 +280,88 @@ Services that can trigger Lambda:
 
 ## S3
 
+Read the S3 FAQ
+
+- Object based storage
+- File size
+  - 0 bytes to 5 TB
+- Files stored in buckets
+- Buckets must have globally unique name
+- Successfully uploaded files return a http 200 status code
+- Buckets can be protected with MFA delete
+
+### Object fundamentals
+
+- Key - name of object
+- Value - object data
+- Version ID
+- Metadata
+- Subresoruces
+  - access control list (ACL)
+  - Torrent
+
+### Consistency model
+
+- read after write for new object PUTs
+- eventual consistency for DELETE and overwrite PUTs
+
 ### Storage types
 
+- S3 Standard
+  - 99.99% availability
+  - 11 9s durability
+- S3 - IA
+  - charged a retrieval fee
+- S3 One Zone IA
+  - charged retrieval fee
+  - only stored in one zone
+- S3 intelligent tiering
+  - moves files around tiers based on usage
+- Glacier
+  - archiving
+  - access from minutes to hours
+- Glacier deep archive
+  - cheapest storage
+  - 12 hour access sla
+
 ### Lifecycle
+
+- Transition to different storage types after a set amount of time
+- Can also be used to expire and delete objects
 
 ### Security
 
 ### Encryption
 
+- In transit
+  - SSL/TLS
+
+- At rest server side
+  - S3 managed keys - SSE-S3
+  - AWS key management service - SSE-KMS
+  - Customer managed keys - SSE-C
+
 ### Version control
 
+- Stores all versions of an object
+- Deleting places a delete marker as the most recent version
+- Good backup tool
+- Cannot be disabled once enabled, only suspended
+- Provides MFA delete capability
+
 ### Cross region replication
+
+- Requires versioning to be enabled
+- Regions must be unique
+- Doesn't replicate objects already in bucket
+- Delete markers don't get replicated
+- Deleting individual versions not replicated
+
+### Transfer acceleration
+
+- Used for speeding up file uploads
+- Utilises the edge network
+- User uploads file to edge which is then transferred over the amazon network to S3
 
 ## Glacier
 
@@ -300,9 +377,47 @@ Services that can trigger Lambda:
 
 ## Snowball
 
+- Used for moving large amounts of data into or out of AWS
+- import or export data to S3
+
+
 ## Storage gateway
 
+- connects on prem device to AWS
+- replicates data from data center to AWS
+- Virtual or physical appliance
+
+- Three different types:
+  - File gateway (NFS $ SMB)
+  - Volume gateway (iSCSI)
+    - Stored volumes
+    - Cached volumes
+  - Tape gateway
+
 ## CloudFront
+
+- Objects are cached according to their TTL
+- Can expire objects to force refresh but get charged for it
+
+### Edge location
+
+- Location where content is cached
+- Separate to a Region or Availability zone
+- Can be written to as well as read from
+
+### Origin
+
+- The source of the files that the CDN will distribute
+
+### Distribution
+
+- The name given to the CDN
+- Consists of a collection of edge locations
+
+### Distribution types
+
+- Web
+- RTMP - media streaming
 
 ## API gateway
 

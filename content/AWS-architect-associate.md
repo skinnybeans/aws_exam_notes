@@ -78,11 +78,14 @@ menu:
   - Recommended that all instances are of same type
   - All instance must be in same AZ
 
-
 - Spread placement groups
   - Use for placing instances on separate hardware
   - Can be spread across AZs
-  - Max 7 instances per AZ per placement group  
+  - Max 7 instances per AZ per placement group
+
+- Partitioned placement groups
+  - Different groups (partitions) of EC2 instances
+  - Each partition runs on a different set of hardware
 
 - No extra charge for using placement groups
 
@@ -113,6 +116,10 @@ menu:
 ### Volumes
 
 - EBS storage attached to an EC2
+- EBS volume will be in the same AZ as the EC2 instance
+- By default the root volume is deleted when the instance is terminated
+- Additional volumes are not deleted by default on termination
+- The root volume can be encrypted
 - Volumes can be encrypted
 - Volume restored from encrypted snapshot will be encrypted
 
@@ -132,14 +139,22 @@ menu:
   - Instance should be stopped
   - Will still work if instance is running
 
-_Encryption_
+#### Encryption
 
+- Root volumes can now be encrypted
 - Snapshot of encrypted volume will be encrypted automatically
 - Encrypted snapshots cannot be:
   - Shared with other accounts
   - Made public
 
-_Snaphotting RAID arrays_
+#### Making encrypted AMI from unencrypted root volume
+
+- Make snapshot of image
+- Copy snapshot and make it encrypted
+- Create AMI from encrypted snapshot
+
+#### Snaphotting RAID arrays
+
 - Extra care required due to interdependencies in the array
 - Take an application consistent snapshot
   - Stop the application writing to disk
@@ -159,14 +174,21 @@ _Snaphotting RAID arrays_
 
 - Cannot delete the EBS snapshot that an AMI is based on.
 
+- Use hardware assisted virtualisation for  best EC2 instance type support when creating AMI from snapshot
+
 ### Instance backed storage
 
- - Sometimes called ephemeral storage
- - Instances with instance backed storage cannot be stopped
- - If the host fails, the data will be lost
- - Can still be rebooted
+- Sometimes called ephemeral storage
+- Instances with instance backed storage cannot be stopped
+- If the host fails, the data will be lost
+- Can still be rebooted
 
 ### Instance backed vs EBS summary
+
+- EBS backed or instance store.
+- Instance store is ephemeral storage closely coupled to the compute
+  - cannot  be stopped.
+- EBS backed storage sits on a disk array somewhere and lifecycle is decoupled from the compute
 
 | Type | On shutdown | On restart | On host failure | On terminate |
 | ---- | ----------- | ---------- | --------------- | ------------ |
@@ -181,7 +203,6 @@ _Snaphotting RAID arrays_
 - Optional 1 min intervals
   - Costs extra
 
-
 - Things to do with Cloudwatch
   - Fancy dashboards to see whats going on
   - Alarms when thresholds are hit
@@ -189,12 +210,13 @@ _Snaphotting RAID arrays_
   - Logging - aggregate, monitor and store
 
 ### Roles
- - Use instead of IAM users for an EC2
- - Removes the need for storing secret access keys
- - Easier to secure & manage
- - Can be assigned to an EC2 _during_ and _after_ provisioning
- - Policies can be added to the role at any time
- - Roles are universal - can use across all regions
+
+- Use instead of IAM users for an EC2
+- Removes the need for storing secret access keys
+- Easier to secure & manage
+- Can be assigned to an EC2 _during_ and _after_ provisioning
+- Policies can be added to the role at any time
+- Roles are universal - can use across all regions
 
 ### Instance metadata
 
@@ -205,8 +227,14 @@ _Snaphotting RAID arrays_
 
 ### Security Groups
 
-- By default all traffic to instances is blocked
+- All inbound traffic blocked by default
+- All outbound traffic allowed
 - Instances can be assigned several security groups
+- Security groups are stateful
+  - Inbound requests can be responded to without an explicit rule
+  - Outbound requests can be responded to without an explicit rule
+
+- Can't block specific ports or IP addresses
 
 ## Load Balancers
 
@@ -369,6 +397,7 @@ Read the S3 FAQ
 
 - Supports Network File System version 4 (NFSv4) protocol
 - Pay for storage Used
+  - Grows automatically as necessary
 - No pre-provisioning
 - Scales to petabytes
 - Supports thousands of concurrent NFS connections
@@ -481,3 +510,62 @@ _Planning DNS migrations_
 - Change name records.
   - Changes will now propagate quickly.
   - Minimise possible downtime with change.
+
+## RDS
+
+- Two key features
+  - Multi AZ for disaster recovery
+  - Read replicas for performance
+
+- Runs on virtual machines
+- Have no access to them (cannot SSH in)
+- Patching is responsibility of Amazon
+- RDS is not serverless
+
+### Multi AZ
+
+- Copy of the data stored in a different AZ
+- For disaster recovery purposes only, not performance
+- AWS will automatically cut over the DNS to point to the other database
+- Can force a failover by rebooting the instance and selecting failover
+- Available for:
+  - MySQL
+  - Oracle
+  - SQL Server
+  - PostgreSQL
+  - MariaDB
+
+### Read replicas
+
+- Read only copy of DB master instance
+- Useful for read heavy workloads
+- For scaling, not DR
+- Must have automatic backups turned on
+- Read replica can exist in a different region
+- Can be promoted to masters but breaks replication
+- Available for:
+  - MySQL
+  - Oracle
+  - PostgreSQL
+  - MariaDB
+  - Aurora
+
+### Backups
+
+- Automated backups
+  - Done during maintenance window
+
+- Snapshots
+  - User initiated
+
+## DynamoDB
+
+- On SSD storage
+- Data replicated across three distinct geographical locations
+- Two different consistency models
+- Eventually consistent reads
+  - Data can be read after 1 second of being written
+  - Best read performance
+  - Default setting
+- Strongly consistent reads
+  - Data can be read in less than one second after being written

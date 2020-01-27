@@ -409,7 +409,6 @@ Read the S3 FAQ
 - Used for moving large amounts of data into or out of AWS
 - import or export data to S3
 
-
 ## Storage gateway
 
 - connects on prem device to AWS
@@ -452,39 +451,45 @@ Read the S3 FAQ
 
 ### CORS
 
-## DNS
+## Route 53
 
-### DNS basics
-#### Top level domains
+### Top level domains
+
 - Managed by Internet Assigned Numbers Authority (IANA)
 - Top level domains are .com .net etc
 
-#### Domain registrars
+### Domain registrars
+
 - Manage purchasing of domains
 - Registers domains with InterNIC which enforces uniqueness of domains across the internet.
 - Domain information becomes available in a central database called WhoIS database.
 
-#### SOA records
+### SOA records
+
 - Contains metadata about the domain
 
-#### Name server records (NS Records)
+### Name server records (NS Records)
+
 - Used by top level domain servers to locate which Content DNS servers contain the authoritative DNS records.
   - in other words, where to go to find out the actual domain name -> IP address mapping (A record).
 
-#### Address record (A Record)
+### Address record (A Record)
+
 - Translates the domain name to an ip address
   - eg http://aws-exam-notes.com to 192.168.0.0
 
-#### Canonical name (CNAME)
+### Canonical name (CNAME)
+
 - Used to resolve one domain name to another
   - eg mobile.somesite.com -> m.somesite.com
 - Can't be used for naked domains (apex record) eg somesite.com
 
-_cost_
+#### cost
 
 - Charged for CNAME look ups.
 
-#### Alias records
+### Alias records
+
 - AWS specific type of record.
 - Very similar to CNAME
   - However alias record can map from a naked domain
@@ -492,24 +497,37 @@ _cost_
   - S3 buckets, load balancers, cloud front distributions.
   - Mainly used for load balancers
 
-_cost_
+#### cost
 
 - No charge for alias record look up
   - For this reason, alway prefer over CNAME when possible
 
-#### TTL
+### TTL
+
 - Time to live for a record.
 - Resolving servers or local pc will cache record for this long.
 - Lower TTL means faster propagation of name changes.
 - Default set to around two days
 
-_Planning DNS migrations_
+#### Planning DNS migrations
 
 - Lower TTL to 300 sec (5 min) at least 2 days before.
   - Allows for TTL change to propagate.
 - Change name records.
   - Changes will now propagate quickly.
   - Minimise possible downtime with change.
+
+### Routing types
+
+| Name | Description |
+| ---  | ---         |
+| Simple | Picks one of the associated IPs at random |
+| Weighted | Set a weight to send traffic to different IP addresses |
+| Latency based | Routes traffic to the destination that has the lowest latency to request source |
+| Failover | Used for an active/passive fail over set up |
+| Geolocation | Traffic gets sent to servers based on geolocation of users |
+| Geoproximity | Uses route 53 traffic flow for doing fancy stuff |
+| Multivalue answer | Like simple routing but can also support health checks |
 
 ## RDS
 
@@ -569,3 +587,128 @@ _Planning DNS migrations_
   - Default setting
 - Strongly consistent reads
   - Data can be read in less than one second after being written
+
+## Redshift
+
+- Database for data warehousing
+- Online analytic processing (OLAP)
+- Two options for configruarion
+  - single node (160GB)
+  - multi node
+    - leader node receives connections and manages queries
+    - compute nodes store data and process queries
+    - up to 128 compute nodes
+
+- backups
+  - enables by default
+  - default retention of 1 day
+  - configurable up to 35 days
+
+- data redundancy
+  - maintains 3 copies of the data
+    - original file
+    - replica on compute nodes
+    - backup on s3
+
+- priced on compute node hours
+
+- cannot have multi AZ turned on
+- can restore snapshots into another AZ
+
+## Aurora
+
+- MySQL compatible database developed by AWS
+
+### Storage scaling
+
+- Starts at 10GB of storage
+  - scaleable in 10GB increments
+  - max 64TB
+
+### Compute scaling
+
+- Up to 32 vCpus
+- 244GB Memory
+
+### Data redundancy
+
+- Stores 2 copies in each AZ
+- Minimum of 3 AZ used
+
+### Replicas
+
+- Aurora replicas (up to 15)
+- MySQL replicas (up to 5)
+
+### Backups
+
+- Automatically backed up
+- Can take snapshots and share to other AWS accounts
+
+## Elasticache
+
+- web service for in memory caching
+- used in front of web sites
+
+- engines
+  - memcached
+    - simple and easy to use
+  - redis
+    - more features such as advanced data types and backups/restore
+    - multiAZ
+
+## VPC
+
+- Virtual data center in the cloud
+- Main components
+  - Internet gateways (IGW)
+  - Virtual private gateways (VPG)
+  - Route tables
+  - Security groups
+  - Network access control lists (NACLs)
+  - Subnets
+- A subnet can only span one availability zone
+- Security groups are stateful
+- NACLs are stateless
+
+### NAT instances/gateways
+
+- Used for providing internet access to private subnets
+- Instances can communicate out, but external traffic cannot initiate connections in
+- Route table entries required to route connections from subnet through NAT
+
+#### NAT instances
+
+- Runs on an EC2
+- Use Amazon AMI
+- Launch inside a public subnet
+- Must disable source and destination traffic checks
+- Must be in a security group
+- Not very resilient
+
+#### NAT gateway
+
+- Choose subnet to create in
+- Require an elastic IP to be attached
+- Managed by AWS
+  - Don't need to patch them
+
+### NACLS
+
+- Rules are evaluated in order until a matching rule is found
+- Need outbound and inbound rules
+- Each subnet can only be associated with 1 nacl
+- A nacl can have many subnets associated with them
+- Default nacl assigned to all newly created subnets (through console)
+- NACLS are evaluated before security groups
+
+### VPC flow logs
+
+- Network traffic logs for VPCs
+- Available at 3 levels
+  - VPC
+  - Subnet
+  - ENI
+- Cannot enable flow logs for a peered VPC unless it is in the same account
+- Cannot tag a flow log
+- Cannot update its config after creating it

@@ -238,15 +238,6 @@ menu:
 
 ## Load Balancers
 
-- Used for spreading traffic across several EC2 instances
-- Instances must be in the same region, but can be in different AZs
-
-- Performs heath checks on the instances
-- Will only send traffic to healthy instances
-
-- Never have a public IPv4 address.
-- Must use a DNS name.
-
 Types of load balancers
 
 | Type | Usage |
@@ -255,6 +246,58 @@ Types of load balancers
 | Network Load Balancer | Layer 4 (network) - content of message not inspected |
 | Classic Load Balancer | Use for EC2 classic. Prefer other load balancer types |
 
+### Application load balancers
+
+- Smart routing
+- Lots of configuration options
+
+- Set up a target group
+- Add instances to target group
+- Create ALB
+- Add target group
+
+
+### Network load balancers
+
+- Have a fix IP address
+- High performance
+- Run at the connection level
+- Expensive
+
+### Classic load balancers
+
+- Can use some layer 7 specific features
+  - X Forward For
+  - Sticky sessions
+- Also configurable for layer 4
+- Cheapest
+
+---
+
+- X Forwarded For
+  - Allowed instances behind the load balancer to see the client IP in the request rather than the load balancer IP
+  - HTTP header
+
+- 504 error
+  - Means the application behind the load balancer has stopped responding
+
+- Instances behind a load balancer are always reported as:
+  - In Service - passing health checks and available to take traffic
+  - Out Of Service - can't take traffic
+
+- Sticky sessions
+  - Ensure that all requests from a client are forwarded to the  same instance
+  - Classic load balancers will route to the same instance
+  - Application load balancers will route to the same target group
+  - If traffic is not evenly distributed to instances behind load balancer try disabling sticky sessions
+
+- Cross zone load balancing
+  - Load balancer can only send traffic to instances in another AZ if cross zone load balancing enabled
+  - This applies even if they registered as targets for the load balancer
+
+- Path patterns
+  - Send traffic to target groups based on the URL
+  - Known as path based routing
 
 ## Auto Scaling
 
@@ -283,6 +326,7 @@ Types of load balancers
 - Max execution time of 5 min
 
 ### Triggers
+
 Services that can trigger Lambda:
 - API gateway
 - AWS IoT
@@ -671,6 +715,19 @@ Read the S3 FAQ
 - Security groups are stateful
 - NACLs are stateless
 
+- 5 IP addresses for every VPC are reserved
+
+### Creating a new VPC
+
+- Comes with
+  - Route table
+  - NACL
+  - Security group
+- Does not come with
+  - Subnets
+  - Internet gateway
+
+
 ### NAT instances/gateways
 
 - Used for providing internet access to private subnets
@@ -702,6 +759,11 @@ Read the S3 FAQ
 - Default nacl assigned to all newly created subnets (through console)
 - NACLS are evaluated before security groups
 
+- The default NACL allows all traffic
+- Any custom NACLs do not allow any traffic
+
+- Each subnet must be associated with 1 NACL
+
 ### VPC flow logs
 
 - Network traffic logs for VPCs
@@ -712,3 +774,79 @@ Read the S3 FAQ
 - Cannot enable flow logs for a peered VPC unless it is in the same account
 - Cannot tag a flow log
 - Cannot update its config after creating it
+
+### VPC endpoints
+
+- Connect to AWS services without going over the internet
+- Do not need public IPs for EC2
+- Two types of endpoint:
+  - Interface endpoint
+  - Gateway endpoint
+
+- Interface endpoint
+  - An ENI with a private IP that can be used to access a range of AWS services
+  - Attach the ENI to an EC2 to get access
+- Gateway endpoint
+  - Looks like a NAT gateway
+  - Used for S3 and DynamoDB
+
+## Applications
+
+### SQS
+
+- Distributed  message queue
+- Used to decouple components of a distributed system
+- Stores up to 256KB of text data
+  - Can go up to 2GB if messages are stored on S3
+- Retention
+  - Configurable from 1 minute to 14 days
+  - Default 4 days
+- Visibility time out
+  - Time from when a message is taken from the queue to when it must be deleted
+  - Otherwise it will become visible in the queue again for processing
+- Pull based
+- Can long poll a queue
+  - If the queue is empty, request will not return  until it times out or a message arrives
+- Two types of queue
+  - Standard
+    - Can take millions of transactions per second
+    - Ensures each message will be delivered at least once
+    - May deliver messages in a different order than they are sent
+  - FIFO
+    - Always retains ordering
+    - No duplicate messages
+    - Limited to 300 transactions per second
+
+### Simple workflow service
+
+- Used to coordinate  work across distributed application components
+- Mainly replaced with step functions now
+- Can incorporate manual steps with automated steps
+- Workflow executions can span up to a year
+- Task based API instead of SQS message based API
+- Tasks are only assigned once
+- Keeps track of all tasks and events in an application
+- SWF actors
+  - Workflow starters
+    - Initiate workflows
+  - Deciders
+    - Control the task flow
+  - Activity workers
+    - Do actual work
+
+### SNS
+
+- Simple notification service
+- Used for pushing events to subscribers
+- Can push messages using
+  - SMS
+  - Email
+  - HTTP
+  - SQS
+- Organised into topics
+- Topics can publish messages in different formats
+
+### Elastic Transcoder
+
+- Media transcoder in the cloud
+- Convert media files into different formats

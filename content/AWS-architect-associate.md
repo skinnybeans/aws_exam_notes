@@ -352,7 +352,6 @@ Services that can trigger Lambda:
 
 ## S3
 
-Read the S3 FAQ
 
 - Object based storage
 - File size
@@ -361,6 +360,8 @@ Read the S3 FAQ
 - Buckets must have globally unique name
 - Successfully uploaded files return a http 200 status code
 - Buckets can be protected with MFA delete
+- Supports IPv6 connections
+- Default limit of 100 per account
 
 ### Object fundamentals
 
@@ -384,9 +385,13 @@ Read the S3 FAQ
   - 11 9s durability
 - S3 - IA
   - charged a retrieval fee
+  - 99.9% availability
+  - 11 9s durability
 - S3 One Zone IA
   - charged retrieval fee
   - only stored in one zone
+  - 99.5% availability
+  - 11 9s durability, however data loss if AZ goes down.
 - S3 intelligent tiering
   - moves files around tiers based on usage
 - Glacier
@@ -434,6 +439,10 @@ Read the S3 FAQ
 - Used for speeding up file uploads
 - Utilises the edge network
 - User uploads file to edge which is then transferred over the amazon network to S3
+
+### Website hosting
+
+- Can set up redirects at the bucket level
 
 ## Glacier
 
@@ -590,6 +599,7 @@ Read the S3 FAQ
 - For disaster recovery purposes only, not performance
 - AWS will automatically cut over the DNS to point to the other database
 - Can force a failover by rebooting the instance and selecting failover
+- Replication is performed synchronously
 - Available for:
   - MySQL
   - Oracle
@@ -616,6 +626,7 @@ Read the S3 FAQ
 
 - Automated backups
   - Done during maintenance window
+  - Backups are stored in the same AZ
 
 - Snapshots
   - User initiated
@@ -631,6 +642,8 @@ Read the S3 FAQ
   - Default setting
 - Strongly consistent reads
   - Data can be read in less than one second after being written
+
+- 400KB limit for key and value
 
 ## Redshift
 
@@ -804,6 +817,7 @@ Read the S3 FAQ
 - Visibility time out
   - Time from when a message is taken from the queue to when it must be deleted
   - Otherwise it will become visible in the queue again for processing
+  - Maximum of 12 hours
 - Pull based
 - Can long poll a queue
   - If the queue is empty, request will not return  until it times out or a message arrives
@@ -850,3 +864,48 @@ Read the S3 FAQ
 
 - Media transcoder in the cloud
 - Convert media files into different formats
+
+### API Gateway
+
+- Provides end points for accessing other AWS resources such as:
+  - Lambda
+  - DynamoDB
+
+- Provides caching to improve response times
+- Automatically scales
+- Can throttle requests
+- Log requests to cloudwatch
+- Remember to enable CORS
+
+### Kinesis
+
+- Place to send streaming data to
+- Three different types:
+  - Kinesis streams
+    - Producers generate data
+    - Send to shards
+    - Consumers read data from shards
+    - Stored for 24h by default
+  - Kinesis firehose
+    - No persistent storage
+    - Processed in realtime then output somewhere
+  - Kinesis analytics
+    - Can look at data in stream or firehose
+
+### Cognito
+
+- Brokers between identity providers like facebook and google
+- Provides temporary credentials based on an IAM role
+- No need to store credentials locally
+
+- User pools
+  - Manage sign up and sign in for users
+  - Can sign in directly to user pool or use other identity provider
+  - User ends up being issued a JWT
+  - Authentication
+
+- Identity pool
+  - Authorisation
+
+- User pool to get JWT issues
+- Present JWT to identity pool to get access to resources
